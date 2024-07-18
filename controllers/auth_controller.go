@@ -8,6 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type AuthValidator struct {
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
+}
+
 type AuthController struct {
 	authService services.AuthServiceInterface
 }
@@ -31,6 +36,16 @@ func (c *AuthController) Index(ctx *gin.Context) {
 }
 
 func (c *AuthController) Auth(ctx *gin.Context) {
+
+	var authValidator AuthValidator
+
+	if err := ctx.ShouldBind(&authValidator); err != nil {
+		ctx.HTML(http.StatusBadRequest, "login", gin.H{
+			"title": "Login",
+		})
+
+		return
+	}
 
 	c.authService.LoginUser(ctx)
 }
