@@ -1,19 +1,19 @@
 package controllers
 
 import (
-	"net/http"
+	"dvtool/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-type IndexController struct{}
+type IndexController struct {
+	IndexService services.IndexServiceInterface
+}
 
-func NewIndexController() *IndexController {
-	return &IndexController{}
+func NewIndexController(indexService services.IndexServiceInterface) *IndexController {
+	return &IndexController{IndexService: indexService}
 }
 
 func (c *IndexController) Index(ctx *gin.Context) {
-	ctx.HTML(http.StatusOK, "index", gin.H{
-		"title": "Home",
-	})
+	c.IndexService.Index(ctx)
 }

@@ -17,5 +17,8 @@ func WebRouter(r *gin.Engine) {
 
 	r.Use(middleware.JwtVerify())
 
-	r.GET("/", controllers.NewIndexController().Index)
+	indexService := services.NewIndexService()
+	indexController := controllers.NewIndexController(indexService)
+
+	r.GET("/", indexController.Index)
 }

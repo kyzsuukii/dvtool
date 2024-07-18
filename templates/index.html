@@ -4,5 +4,21 @@
     <h1>Dvtool</h1>
     <p>Web interface for predefined shell commands.</p>
   </hgroup>
+  {{range .actions}}
+  <article>
+    <form method="POST">
+      <h3>{{.Title}}</h3>
+      <p>{{.Description}}</p>
+      {{range .Arguments}}
+      <label
+        >{{.Name}}:
+        <input type="text" name="{{.Name}}" value="{{.Default}}" /></label
+      ><br />
+      {{end}}
+      <input type="hidden" name="shell" value="{{.Shell}}" />
+      <input class="outline" type="submit" value="Execute" />
+    </form>
+  </article>
+  {{end}}
 </main>
 {{ end }}

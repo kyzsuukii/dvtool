@@ -1,0 +1,16 @@
+actions:
+  - title: Ping host
+    shell: ping {{ host }} -c {{ count }}
+    description: Pings a host
+    arguments:
+      - name: host
+        title: host
+        default: google.com
+
+      - name: count
+        title: Count
+        default: 4
+
+  - title: Run command
+    description: Run a command
+    shell: echo hello world
