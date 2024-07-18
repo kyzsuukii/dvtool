@@ -21,4 +21,5 @@ func WebRouter(r *gin.Engine) {
 	indexController := controllers.NewIndexController(indexService)
 
 	r.GET("/", indexController.Index)
+	r.POST("/", indexController.Output)
 }
