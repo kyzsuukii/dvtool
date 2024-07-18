@@ -2,9 +2,7 @@ package main
 
 import (
 	"dvtool/config"
-	"dvtool/middleware"
 	"dvtool/routes"
-	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -27,16 +25,7 @@ func main() {
 
 	r.Static("/assets", "./assets")
 
-	r.GET("/login", routes.Login().Index)
-	r.POST("/login", routes.Login().Auth)
-
-	r.Use(middleware.JwtVerify())
-
-	r.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "index", gin.H{
-			"title": "Home",
-		})
-	})
+	routes.WebRouter(r)
 
 	r.Run(":3000")
 }
