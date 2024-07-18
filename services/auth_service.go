@@ -44,6 +44,8 @@ func (s *AuthService) LoginUser(ctx *gin.Context) {
 
 		ctx.Redirect(http.StatusSeeOther, "/")
 	} else {
-		ctx.Redirect(http.StatusSeeOther, "/login")
+		ctx.HTML(http.StatusUnauthorized, "login", gin.H{
+			"title": "Login",
+		})
 	}
 }
