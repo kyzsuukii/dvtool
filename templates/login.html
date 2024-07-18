@@ -1,0 +1,13 @@
+{{ template "layout.html" . }} {{ define "content" }}
+<main class="container">
+  <article>
+    <form method="post">
+      <label for="username">Username</label>
+      <input type="text" name="username" id="username" required />
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" required />
+      <button type="submit">Login</button>
+    </form>
+  </article>
+</main>
+{{ end }}
