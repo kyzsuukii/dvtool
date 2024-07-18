@@ -2,23 +2,19 @@ package controllers
 
 import (
 	"dvtool/services"
+	"dvtool/types"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
-type AuthValidator struct {
-	Username string `form:"username" binding:"required"`
-	Password string `form:"password" binding:"required"`
-}
-
 type AuthController struct {
-	authService services.AuthServiceInterface
+	AuthService services.AuthServiceInterface
 }
 
 func NewAuthController(authService services.AuthServiceInterface) *AuthController {
-	return &AuthController{authService: authService}
+	return &AuthController{AuthService: authService}
 }
 
 func (c *AuthController) Index(ctx *gin.Context) {
@@ -37,7 +33,7 @@ func (c *AuthController) Index(ctx *gin.Context) {
 
 func (c *AuthController) Auth(ctx *gin.Context) {
 
-	var authValidator AuthValidator
+	var authValidator types.AuthValidator
 
 	if err := ctx.ShouldBind(&authValidator); err != nil {
 		ctx.HTML(http.StatusBadRequest, "login", gin.H{
@@ -47,5 +43,5 @@ func (c *AuthController) Auth(ctx *gin.Context) {
 		return
 	}
 
-	c.authService.LoginUser(ctx)
+	c.AuthService.LoginUser(ctx)
 }
