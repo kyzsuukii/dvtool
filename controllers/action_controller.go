@@ -17,6 +17,7 @@ func NewActionController(actionService services.ActionServiceInterface) *ActionC
 }
 
 func (c *ActionController) Index(ctx *gin.Context) {
+	c.ActionService.RefreshEncryptionKey()
 	c.ActionService.Index(ctx)
 }
 func (c *ActionController) Output(ctx *gin.Context) {

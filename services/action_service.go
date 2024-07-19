@@ -4,6 +4,7 @@ import (
 	"dvtool/types"
 	"dvtool/utils"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -17,12 +18,22 @@ type ActionServiceInterface interface {
 	Index(ctx *gin.Context)
 	Output(ctx *gin.Context)
 	ParseActionFile(action *types.Action)
+	RefreshEncryptionKey()
 }
 
-type ActionService struct{}
+type ActionService struct {
+	EncryptionKey []byte
+}
 
 func NewActionService() *ActionService {
-	return &ActionService{}
+
+	key, err := utils.GenerateRandomKey(32)
+
+	utils.CheckError(err)
+
+	return &ActionService{
+		EncryptionKey: key,
+	}
 }
 
 func (s *ActionService) ParseActionFile(action *types.Action) {
@@ -34,14 +45,17 @@ func (s *ActionService) ParseActionFile(action *types.Action) {
 }
 
 func (s *ActionService) IsShellCommandAllowed(action *types.Action, command string) bool {
-	for _, ActionCommand := range action.Actions {
-		actualCommand := ActionCommand.Shell
-		for _, arg := range ActionCommand.Arguments {
+	for _, actionCommand := range action.Actions {
+		actualCommand := actionCommand.Shell
+		if len(actionCommand.Arguments) > 0 {
+			arg := actionCommand.Arguments[0]
 			placeholder := fmt.Sprintf("{{ %s }}", arg.Name)
 			actualCommand = strings.ReplaceAll(actualCommand, placeholder, arg.Default)
 		}
 
-		if actualCommand == command {
+		mainCommand := strings.Split(actualCommand, " ")[0]
+
+		if strings.HasPrefix(command, mainCommand) {
 			return true
 		}
 	}
@@ -55,8 +69,7 @@ func (s *ActionService) Index(ctx *gin.Context) {
 	s.ParseActionFile(&action)
 
 	for i, actionCommand := range action.Actions {
-		encryptedShell, err := utils.Encrypt(actionCommand.Shell)
-		utils.CheckError(err)
+		encryptedShell := utils.EncryptString(actionCommand.Shell, s.EncryptionKey)
 		action.Actions[i].Shell = encryptedShell
 	}
 
@@ -69,7 +82,7 @@ func (s *ActionService) Index(ctx *gin.Context) {
 func (s *ActionService) Output(ctx *gin.Context) {
 	shell := ctx.PostForm("shell")
 
-	shell, err := utils.Decrypt(shell)
+	shell, err := utils.DecryptString(shell, s.EncryptionKey)
 
 	utils.CheckError(err)
 
@@ -85,6 +98,7 @@ func (s *ActionService) Output(ctx *gin.Context) {
 	s.ParseActionFile(&action)
 
 	if !s.IsShellCommandAllowed(&action, shell) {
+		log.Printf("Shell command not allowed: %s", shell)
 		ctx.HTML(http.StatusBadRequest, "action", gin.H{
 			"title":   "Home",
 			"actions": action.Actions,
@@ -100,4 +114,9 @@ func (s *ActionService) Output(ctx *gin.Context) {
 		"title":  "Output",
 		"output": cmdOutput,
 	})
+}
+func (s *ActionService) RefreshEncryptionKey() {
+	key, err := utils.GenerateRandomKey(32)
+	utils.CheckError(err)
+	s.EncryptionKey = key
 }
