@@ -13,19 +13,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type IndexServiceInterface interface {
+type ActionServiceInterface interface {
 	Index(ctx *gin.Context)
 	Output(ctx *gin.Context)
 	ParseActionFile(action *types.Action)
 }
 
-type IndexService struct{}
+type ActionService struct{}
 
-func NewIndexService() *IndexService {
-	return &IndexService{}
+func NewActionService() *ActionService {
+	return &ActionService{}
 }
 
-func (s *IndexService) ParseActionFile(action *types.Action) {
+func (s *ActionService) ParseActionFile(action *types.Action) {
 	actionFile, err := os.ReadFile(path.Join("config", "action.yaml"))
 
 	utils.CheckError(err)
@@ -33,18 +33,18 @@ func (s *IndexService) ParseActionFile(action *types.Action) {
 	utils.CheckError(yaml.Unmarshal(actionFile, &action))
 }
 
-func (s *IndexService) Index(ctx *gin.Context) {
+func (s *ActionService) Index(ctx *gin.Context) {
 	var action types.Action
 
 	s.ParseActionFile(&action)
 
-	ctx.HTML(http.StatusOK, "index", gin.H{
+	ctx.HTML(http.StatusOK, "action", gin.H{
 		"title":   "Home",
 		"actions": action.Actions,
 	})
 }
 
-func (s *IndexService) Output(ctx *gin.Context) {
+func (s *ActionService) Output(ctx *gin.Context) {
 	shell := ctx.PostForm("shell")
 
 	for key, values := range ctx.Request.PostForm {
