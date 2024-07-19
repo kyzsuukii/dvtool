@@ -35,6 +35,10 @@ func (s *AuthService) LoginUser(ctx *gin.Context) {
 
 	if s.ValidateCredentials(username, password) {
 		session := sessions.Default(ctx)
+		session.Options(sessions.Options{
+			MaxAge: 600,
+		})
+
 		token, err := s.GenerateToken(username)
 
 		session.Set("token", token)
