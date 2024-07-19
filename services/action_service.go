@@ -46,17 +46,15 @@ func (s *ActionService) ParseActionFile(action *types.Action) {
 
 func (s *ActionService) IsShellCommandAllowed(action *types.Action, command string) bool {
 	for _, actionCommand := range action.Actions {
-		actualCommand := actionCommand.Shell
-		if len(actionCommand.Arguments) > 0 {
-			arg := actionCommand.Arguments[0]
-			placeholder := fmt.Sprintf("{{ %s }}", arg.Name)
-			actualCommand = strings.ReplaceAll(actualCommand, placeholder, arg.Default)
+		if actionCommand.Shell == command {
+			return true
 		}
 
-		mainCommand := strings.Split(actualCommand, " ")[0]
-
-		if strings.HasPrefix(command, mainCommand) {
-			return true
+		if len(actionCommand.Arguments) > 0 {
+			mainCommand := strings.Split(actionCommand.Shell, " ")[0]
+			if strings.HasPrefix(command, mainCommand) {
+				return true
+			}
 		}
 	}
 
