@@ -33,6 +33,22 @@ func (s *ActionService) ParseActionFile(action *types.Action) {
 	utils.CheckError(yaml.Unmarshal(actionFile, &action))
 }
 
+func (s *ActionService) IsShellCommandAllowed(action *types.Action, command string) bool {
+	for _, ActionCommand := range action.Actions {
+		actualCommand := ActionCommand.Shell
+		for _, arg := range ActionCommand.Arguments {
+			placeholder := fmt.Sprintf("{{ %s }}", arg.Name)
+			actualCommand = strings.ReplaceAll(actualCommand, placeholder, arg.Default)
+		}
+
+		if actualCommand == command {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *ActionService) Index(ctx *gin.Context) {
 	var action types.Action
 
@@ -52,6 +68,18 @@ func (s *ActionService) Output(ctx *gin.Context) {
 			placeholder := fmt.Sprintf("{{ %s }}", key)
 			shell = strings.ReplaceAll(shell, placeholder, values[0])
 		}
+	}
+
+	var action types.Action
+
+	s.ParseActionFile(&action)
+
+	if !s.IsShellCommandAllowed(&action, shell) {
+		ctx.HTML(http.StatusBadRequest, "action", gin.H{
+			"title":   "Home",
+			"actions": action.Actions,
+		})
+		return
 	}
 
 	cmdOutput, err := utils.RunCommand(shell)
