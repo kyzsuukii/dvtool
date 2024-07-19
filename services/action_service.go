@@ -54,6 +54,12 @@ func (s *ActionService) Index(ctx *gin.Context) {
 
 	s.ParseActionFile(&action)
 
+	for i, actionCommand := range action.Actions {
+		encryptedShell, err := utils.Encrypt(actionCommand.Shell)
+		utils.CheckError(err)
+		action.Actions[i].Shell = encryptedShell
+	}
+
 	ctx.HTML(http.StatusOK, "action", gin.H{
 		"title":   "Home",
 		"actions": action.Actions,
@@ -62,6 +68,10 @@ func (s *ActionService) Index(ctx *gin.Context) {
 
 func (s *ActionService) Output(ctx *gin.Context) {
 	shell := ctx.PostForm("shell")
+
+	shell, err := utils.Decrypt(shell)
+
+	utils.CheckError(err)
 
 	for key, values := range ctx.Request.PostForm {
 		if key != "shell" {
